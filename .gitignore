@@ -40,3 +40,11 @@ buildNumber.properties
 .project
 # JDT-specific (Eclipse Java Development Tools)
 .classpath
+/frontend/node/node.exe
+/src/test/java/com/recondev/newsaggregator/DatabaseConnectionTest.java
+/frontend/node/npm.cmd
+/src/main/java/com/recondev/newsaggregator/service/GoogleCloudStorageService.java
+/src/main/resources/application.properties
+/frontend/node/npm
+/src/main/java/com/recondev/newsaggregator/nlpservice/NlpClient.java
+/src/main/java/com/recondev/newsaggregator/service/OpenAIService.java
