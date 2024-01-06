@@ -1,6 +1,5 @@
 package com.recondev.newsaggregator.service;
 
-import com.jzhangdeveloper.newsapi.params.SourcesParams;
 import com.recondev.newsaggregator.dto.NewsApiResponse;
 import com.recondev.newsaggregator.model.NewsArticle;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,6 +23,8 @@ public class NewsApiService {
     private final String apiKey;
     private final RestTemplate restTemplate;
 
+    private final String newsUrl = "https://newsapi.org/v2/";
+
 
     public NewsApiService(@Value("${newsapi.apikey}") String apiKey) {
         this.restTemplate = new RestTemplate();
@@ -33,13 +34,13 @@ public class NewsApiService {
 
     public List<NewsArticle> fetchTopHeadlines(String country/*, String category*/) {
 
-        String url = "https://newsapi.org/v2/top-headlines?country=" + country;
+        String url = newsUrl + "top-headlines?country=" + country;
         try {
             // Create HttpHeaders
             HttpHeaders headers = new HttpHeaders();
             headers.set("x-api-key", apiKey);
             HttpEntity<?> entity = new HttpEntity<>(headers);
-            // Use exchange method with the HttpEntity
+            // Use exchange method with the HttpEntity. The ParameterizedTypeReference is used to specify the type of the response body to be returned.
             ResponseEntity<NewsApiResponse> response = restTemplate.exchange(
                     url,
                     HttpMethod.GET,
@@ -56,7 +57,8 @@ public class NewsApiService {
     }
 
     public List<NewsArticle> fetchEverything(String query) {
-        String url = "https://newsapi.org/v2/everything?q=" + query;
+
+        String url = newsUrl + "everything?q=" + query;
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("x-api-key", apiKey);
@@ -82,12 +84,25 @@ public class NewsApiService {
 
     public List<String> fetchSources(String language, String country) {
         try {
-            String url = "https://newsapi.org/v2/sources?language=" + language + "&country=" + country + "&apiKey=" + apiKey;
-            // Call the API and parse the response
-            Map<String, String> sourcesParams = SourcesParams.newBuilder()
-                    .setCountry("us")
-                    .setLanguage("en")
-                    .build();
+
+            String url = newsUrl + "sources?language=" + language + "&country=" + country + "&apiKey=" + apiKey;
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("x-api-key", apiKey);
+            HttpEntity<?> entity = new HttpEntity<>(headers);
+
+            // Call the API and parse the response using the ParameterizedTypeReference
+            ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    entity,
+                    new ParameterizedTypeReference<Map<String, Object>>() {
+                    }
+
+            );
+            Map<String, Object> apiResponse = response.getBody();
+            List<String> sources = apiResponse != null ? (List<String>) apiResponse.get("sources") : new ArrayList<>();
+            return sources;
+
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
@@ -102,7 +117,6 @@ public class NewsApiService {
         // ... set other properties
         return article;
     }
-
 
     //    public NewsApiService(String yourApiKey) {
 //    }

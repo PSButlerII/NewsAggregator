@@ -7,6 +7,7 @@ import java.util.List;
 /***
  * This class is used to map the response from the News API.
  */
+// This class is used to map the response from the News API.  Similar to the NewsArticle class, but without the @Entity annotation.
 public class NewsApiResponse {
     private String status;
     private int totalResults;
