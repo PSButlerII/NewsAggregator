@@ -27,7 +27,8 @@ various sources.
 
 * Clone the repository
 * Open the project in IntelliJ IDEA
-* Run the project
+* mvn clean install -X to install the dependencies
+* mvn spring-boot:run -X to run the project
 * Open the project in your browser
 * Enjoy
 

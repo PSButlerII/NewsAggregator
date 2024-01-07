@@ -1,5 +1,6 @@
 package com.recondev.newsaggregator.service;
 
+import com.recondev.newsaggregator.dto.NewsQueryDto;
 import com.recondev.newsaggregator.enums.Enums;
 import com.recondev.newsaggregator.model.NewsArticle;
 import com.rometools.rome.feed.synd.SyndEntry;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.net.URL;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -40,10 +42,10 @@ public class NewsFetchingService {
         this.newsApiService = newsApiService;
     }
 
-    public List<NewsArticle> fetchLatestNews(Enums.NewsFetchingStrategy strategy) {
+    public List<NewsArticle> fetchTheNews(Enums.NewsFetchingStrategy strategy, NewsQueryDto params) {
         switch (strategy) {
             case API:
-                return fetchFromApi(1);
+                return fetchFromApi(params);
             case RSS:
                 return fetchFromRss();
             case WEB_SCRAPING:
@@ -53,17 +55,19 @@ public class NewsFetchingService {
         }
     }
 
-    private List<NewsArticle> fetchFromApi(int strategy) {
-        switch (strategy) {
-            case 1:
-                return newsApiService.fetchTopHeadlines("us"/*,"politics"*/);
-            case 2:
-                return newsApiService.fetchEverything("us");
+    private List<NewsArticle> fetchFromApi(NewsQueryDto params) {
+        if (params == null) {
+            return newsApiService.fetchTopHeadlines("us", 100, 1);
+        } else {
+            return newsApiService.fetchEverything(params.getQuery(), params.getSearchIn(),
+                    params.getDomains(), params.getExcludeDomains(),
+                    params.getFrom(), params.getTo(),
+                    params.getLanguage(), params.getSortBy(),
+                    params.getPageSize(), params.getPage());
 //            case 3:
 //                return newsApiService.fetchSources(null,null);
-            default:
-                return null;
         }
+
     }
 
     private List<NewsArticle> fetchFromRss() {
@@ -85,11 +89,15 @@ public class NewsFetchingService {
         article.setTitle(entry.getTitle());
         article.setContent(entry.getDescription().getValue());
         article.setAuthor(entry.getAuthor());
-        article.setPublishedAt(ZonedDateTime.from(entry.getPublishedDate().toInstant()
-                .atZone(ZoneId.systemDefault())
-                .toLocalDate()));
+
+        // Convert to ZonedDateTime assuming start of the day in system default timezone
+        LocalDate localDate = entry.getPublishedDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        ZonedDateTime zonedDateTime = localDate.atStartOfDay(ZoneId.systemDefault());
+        article.setPublishedAt(zonedDateTime);
+
         return article;
     }
+
 
     private List<NewsArticle> fetchByWebScraping() {
         List<NewsArticle> articles = new ArrayList<>();
@@ -103,5 +111,12 @@ public class NewsFetchingService {
             LOGGER.error("Error during web scraping: {}", e.getMessage(), e);
         }
         return articles;
+    }
+
+    public List<NewsArticle> fetchFromApiWithParameters(NewsQueryDto newsQueryDto) {
+        return newsApiService.fetchEverything(newsQueryDto.getQuery(), newsQueryDto.getSearchIn(),
+                newsQueryDto.getDomains(), newsQueryDto.getExcludeDomains(), newsQueryDto.getFrom(),
+                newsQueryDto.getTo(), newsQueryDto.getLanguage(), newsQueryDto.getSortBy(), newsQueryDto.getPageSize(), newsQueryDto.getPage());
+
     }
 }
