@@ -21,7 +21,7 @@ public class ScheduledNewsFetcher {
     @Scheduled(fixedRate = 100000) // Fetch news every 100 seconds (as an example)
     public void fetchNewsRegularly() {
         // Specify the news fetching strategy (e.g., API, RSS, WEB_SCRAPING)
-        List<NewsArticle> articles = newsFetchingService.fetchLatestNews(Enums.NewsFetchingStrategy.API);
+        List<NewsArticle> articles = newsFetchingService.fetchTheNews(Enums.NewsFetchingStrategy.API, null);
 
         // Save articles to the database or perform other operations
         // Example: saveArticles(articles);

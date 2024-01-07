@@ -1,20 +1,18 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png">
-  <HelloWorld msg="Welcome to Your Vue.js App"/>
-  <NewsArticle/>
-  <LatestNews/>
+  <div id="app">
+    <AppNavbar />
+    <router-view></router-view>
+  </div>
+<img alt="Vue logo" src="./assets/logo.png">
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
-import NewsArticle from './components/NewsArticle.vue'
-import LatestNews from './components/LatestNews.vue'
+import AppNavbar from './components/AppNavbar.vue'
+
 export default {
   name: 'App',
   components: {
-    HelloWorld,
-    NewsArticle, // Add the imported NewsArticle component here
-    LatestNews
+    AppNavbar
   }
 }
 </script>

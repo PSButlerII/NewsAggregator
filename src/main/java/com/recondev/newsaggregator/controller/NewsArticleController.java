@@ -1,5 +1,6 @@
 package com.recondev.newsaggregator.controller;
 
+import com.recondev.newsaggregator.dto.NewsQueryDto;
 import com.recondev.newsaggregator.enums.Enums;
 import com.recondev.newsaggregator.model.NewsArticle;
 import com.recondev.newsaggregator.service.NewsDatabaseService;
@@ -10,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -41,8 +43,11 @@ public class NewsArticleController {
     @GetMapping("/external")
     public ResponseEntity<List<NewsArticle>> getAllNewsFromApi() {
         // ... implementation ...
-        List<NewsArticle> articles = newsFetchingService.fetchLatestNews(API);
+
+        List<NewsArticle> articles = newsFetchingService.fetchTheNews(API, null);
         return ResponseEntity.ok(articles);
+
+
     }
 
     // Get a specific news article by ID
@@ -66,7 +71,7 @@ public class NewsArticleController {
     @GetMapping("/latest")
     public ResponseEntity<List<NewsArticle>> getLatestNews(@RequestParam Enums.NewsFetchingStrategy strategy) {
         try {
-            List<NewsArticle> articles = newsFetchingService.fetchLatestNews(strategy);
+            List<NewsArticle> articles = newsFetchingService.fetchTheNews(strategy, null);
             return ResponseEntity.ok(articles);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -95,9 +100,23 @@ public class NewsArticleController {
         }
     }
 
+    @GetMapping("/fetch")
+    public ResponseEntity<List<NewsArticle>> fetchNews(NewsQueryDto newsQueryDto) {
+        LocalDate now = LocalDate.now();
+        if (newsQueryDto.getFrom() == null) {
+            newsQueryDto.setFrom(now.minusWeeks(3)); // Set to 3 weeks ago
+        }
+        if (newsQueryDto.getTo() == null) {
+            newsQueryDto.setTo(now); // Set to today
+        }
+        List<NewsArticle> articles = newsFetchingService.fetchFromApiWithParameters(newsQueryDto);
+        return ResponseEntity.ok(articles);
+    }
+
+
     @GetMapping("/showNews")
     public String showNews(Model model) {
-        model.addAttribute("articles", newsFetchingService.fetchLatestNews(API));
+        model.addAttribute("articles", newsFetchingService.fetchTheNews(API, null));
         return "news";
     }
     // Additional endpoints as needed
